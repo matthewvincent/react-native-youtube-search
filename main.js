@@ -257,7 +257,7 @@ const CloseSearchButton = ({setModalVisible}) => (
   </TouchableOpacity>
 );
 
-
+// list of buttons that change our search order state
 const OrderSelctor = ({setSearchOrder, searchOrder}) => (
   <View>
     <Text style={{marginLeft: 10, marginTop: 20}}>
@@ -278,6 +278,7 @@ const OrderSelctor = ({setSearchOrder, searchOrder}) => (
   </View>
 );
 
+// individual button for "OrderSelector"
 const OrderButton = ({value, setSearchOrder, searchOrder}) => (
   <TouchableOpacity
     style={searchOrder === value.query 
