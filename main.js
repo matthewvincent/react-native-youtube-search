@@ -4,6 +4,7 @@ import React from 'react';
 import _ from 'underscore';
 import dismissKeyboard from 'react-native-dismiss-keyboard';
 import TimeAgo from 'react-native-timeago';
+import key from './key';
 import {
   StyleSheet,
   Text,
@@ -37,7 +38,7 @@ class App extends React.Component {
       modalVisible: false,
       searchHistory: [],
       ds: ds,
-      queryOrder: 'relevance'
+      searchOrder: 'relevance'
     }
   }
   // initial data fetch
@@ -61,7 +62,8 @@ class App extends React.Component {
       max, 
       query, 
       key, 
-      resetToken 
+      resetToken,
+      order 
     } = options;
 
     const nextPage = resetToken 
@@ -74,7 +76,7 @@ class App extends React.Component {
       + "&maxResults=" + max
       + "&type=video"
       + "&videoSyndicated=true"
-      + "&order=" + this.state.queryOrder
+      + "&order=" + order
       + "&q=" + query
       + "&key=" + key;
       + "&part=snippet,statistics"
@@ -113,8 +115,9 @@ class App extends React.Component {
     this.searchYoutube({
       query: searchString,
       max: 25,
-      key: "AIzaSyCcWlWyGp0wiAWldkCxCkhMVMrymb1dCqY",
-      resetToken: true
+      key: key,
+      resetToken: true,
+      order: this.state.searchOrder
     }, setVideoState.bind(this))
   }
 
@@ -137,9 +140,14 @@ class App extends React.Component {
     this.searchYoutube({
       query: this.state.searchString,
       max: 25,
-      key: "AIzaSyCcWlWyGp0wiAWldkCxCkhMVMrymb1dCqY",
-      resetToken: false
+      key: key,
+      resetToken: false,
+      order: this.state.searchOrder
     }, addVideos.bind(this));
+  }
+
+  setSearchOrder(value) {
+    this.setState({searchOrder: value})
   }
 
   render() {
@@ -159,6 +167,8 @@ class App extends React.Component {
             searchHistory={this.state.searchHistory}
             setModalVisible={this.setModalVisible.bind(this)}
             getVideos={this.getVideos.bind(this)}
+            setSearchOrder={this.setSearchOrder.bind(this)}
+            searchOrder={this.state.searchOrder}
           />
 
           <Browser 
@@ -179,7 +189,9 @@ const SearchModal = ({
   modalVisible, 
   searchHistory, 
   setModalVisible, 
-  getVideos
+  getVideos,
+  setSearchOrder,
+  searchOrder
 }) => (
   <Modal
     animationType={"slide"}
@@ -190,6 +202,10 @@ const SearchModal = ({
     <CloseSearchButton setModalVisible={setModalVisible} />
     <View style={{marginTop: 22, flex: 1}}>   
       <SearchBar getVideos={getVideos} />
+      <OrderSelctor 
+        setSearchOrder={setSearchOrder}
+        searchOrder={searchOrder}
+      />
       <Text style={{marginLeft: 10, marginTop: 20}}>
         Recent:
       </Text>      
@@ -238,6 +254,40 @@ const CloseSearchButton = ({setModalVisible}) => (
         style={styles.closeSearchIcon}
       />
     </View>
+  </TouchableOpacity>
+);
+
+
+const OrderSelctor = ({setSearchOrder, searchOrder}) => (
+  <View>
+    <Text style={{marginLeft: 10, marginTop: 20}}>
+      Order Results By:
+    </Text>
+    <View style={styles.orderSelector}>
+      {[{query:'relevance', title: 'Relevance'}, 
+        {query:'viewCount', title: 'Views'}, 
+        {query:'date', title: 'Date'}].map((value, i) => (
+        <OrderButton
+          key={i}
+          value={value}
+          setSearchOrder={setSearchOrder}
+          searchOrder={searchOrder}
+        />
+      ))}
+    </View>
+  </View>
+);
+
+const OrderButton = ({value, setSearchOrder, searchOrder}) => (
+  <TouchableOpacity
+    style={searchOrder === value.query 
+      ? {flex: 1, backgroundColor: 'rgba(0,0,0,.2)', height: 50} 
+      : {flex: 1, height: 50}}
+    onPress={()=>{setSearchOrder(value.query)}}
+  >
+    <Text style={{textAlign:'center', flex: 1, paddingTop: 17}}>
+      {value.title}
+    </Text>
   </TouchableOpacity>
 );
 
@@ -480,7 +530,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     borderWidth: .5,
     borderColor: 'rgba(0,0,0,.2)'
-
   },
   searchHistoryItem: {
     backgroundColor:'white', 
@@ -497,6 +546,17 @@ const styles = StyleSheet.create({
     width: width - 80, 
     flex: 1, 
     textAlign: 'center'
+  },
+  orderSelector: {
+    flex: 1, 
+    height: 50, 
+    borderRadius: 2,
+    borderWidth: .5, 
+    borderColor: 'rgba(0,0,0,.2)', 
+    backgroundColor:'rgba(0,0,0,.05)', 
+    flexDirection: 'row', 
+    alignItems: 'center',
+    margin: 10
   }
 });
 
